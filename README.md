@@ -2,7 +2,7 @@
 
 An interactive React component that simulates and visualizes the behavior of rubber bands in different arrangements (series, parallel, and combined) and compares them to muscle responses.
 
-![Rubber Band Simulator Preview]
+
 
 ## Features
 

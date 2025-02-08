@@ -1,0 +1,143 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+const RubberBandSimulator = () => {
+  const [pulling, setPulling] = useState(false);
+  const [arrangement, setArrangement] = useState('series');
+  const [stretch, setStretch] = useState(0);
+  
+  // Constants for simulation
+  const REST_LENGTH = 100;
+  const MAX_STRETCH = 200;
+  
+  // Calculate force based on arrangement and stretch
+  const getForce = (arrangement, stretch) => {
+    switch(arrangement) {
+      case 'series':
+        return stretch * 0.5; // Lower force, higher displacement
+      case 'parallel':
+        return stretch * 2; // Higher force, lower displacement
+      case 'both':
+        return stretch * 1; // Balanced response
+      default:
+        return stretch;
+    }
+  };
+
+  // Handle mouse interaction
+  const handleMouseDown = () => setPulling(true);
+  const handleMouseUp = () => {
+    setPulling(false);
+    setStretch(0);
+  };
+  const handleMouseMove = (e) => {
+    if (pulling) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      setStretch(Math.min(Math.max(0, x - REST_LENGTH), MAX_STRETCH));
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-4xl">
+      <CardHeader>
+        <CardTitle>Rubber Band Arrangement Simulator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <button
+              className={`px-4 py-2 rounded ${arrangement === 'series' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setArrangement('series')}
+            >
+              Series
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${arrangement === 'parallel' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setArrangement('parallel')}
+            >
+              Parallel
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${arrangement === 'both' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setArrangement('both')}
+            >
+              Both
+            </button>
+          </div>
+          
+          <div 
+            className="relative h-64 bg-gray-100 rounded cursor-pointer"
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onMouseMove={handleMouseMove}
+          >
+            {/* Fixed end */}
+            <div className="absolute left-0 top-1/2 w-2 h-16 bg-gray-800 -translate-y-1/2" />
+            
+            {/* Rubber band visualization */}
+            <div className="absolute left-2 top-1/2 -translate-y-1/2">
+              {arrangement === 'series' && (
+                <div className="flex items-center">
+                  <div className="h-2 bg-red-500 rounded" style={{width: REST_LENGTH + stretch/2}} />
+                  <div className="h-2 bg-blue-500 rounded" style={{width: REST_LENGTH + stretch/2}} />
+                </div>
+              )}
+              
+              {arrangement === 'parallel' && (
+                <div className="relative">
+                  <div className="h-2 bg-red-500 rounded mb-1" style={{width: REST_LENGTH + stretch}} />
+                  <div className="h-2 bg-blue-500 rounded" style={{width: REST_LENGTH + stretch}} />
+                </div>
+              )}
+              
+              {arrangement === 'both' && (
+                <div className="relative">
+                  <div className="flex items-center mb-1">
+                    <div className="h-2 bg-red-500 rounded" style={{width: (REST_LENGTH + stretch)/2}} />
+                    <div className="h-2 bg-blue-500 rounded" style={{width: (REST_LENGTH + stretch)/2}} />
+                  </div>
+                  <div className="h-2 bg-green-500 rounded" style={{width: REST_LENGTH + stretch}} />
+                </div>
+              )}
+            </div>
+            
+            {/* Moving end */}
+            <div 
+              className="absolute top-1/2 w-2 h-16 bg-gray-800 -translate-y-1/2 cursor-grab"
+              style={{left: `${REST_LENGTH + stretch}px`}}
+            />
+          </div>
+          
+          {/* Measurements */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-gray-100 rounded">
+              <h3 className="font-bold mb-2">Force</h3>
+              <div className="h-4 bg-blue-500 rounded" style={{width: `${getForce(arrangement, stretch)}px`}} />
+            </div>
+            <div className="p-4 bg-gray-100 rounded">
+              <h3 className="font-bold mb-2">Length</h3>
+              <div className="h-4 bg-green-500 rounded" style={{width: `${stretch}px`}} />
+            </div>
+          </div>
+          
+          {/* Analysis */}
+          <div className="p-4 bg-gray-100 rounded">
+            <h3 className="font-bold mb-2">Comparison to Muscle Response</h3>
+            <p className="text-sm">
+              {arrangement === 'series' && 
+                "Series arrangement shows greater elongation with less force, similar to muscle sarcomeres in series. This arrangement favors velocity over force production."}
+              {arrangement === 'parallel' && 
+                "Parallel arrangement demonstrates higher force production with less elongation, similar to muscle fibers arranged in parallel. This configuration favors force generation over velocity."}
+              {arrangement === 'both' && 
+                "Combined arrangement shows balanced force-length relationship, similar to actual muscle architecture with both serial and parallel elements. This provides a compromise between force and velocity capabilities."}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default RubberBandSimulator;
